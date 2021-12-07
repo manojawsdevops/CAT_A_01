@@ -34,7 +34,6 @@ jobs:
           cd bars
           ls 
           mkdir /root/bars/dummy
-          rm -r /root/bars/*
           cp *.bar /root/bars
       
       - name: Docker Build Image for repo ${{ github.repository }} of build number ${{ steps.buildnumber.outputs.build_number }}
