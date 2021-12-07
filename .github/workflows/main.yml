@@ -24,18 +24,31 @@ jobs:
         
       - name: Create Bars Folder
         run: mkdir bars
-        
-      - name: Build All Projects One By One
-        run: for f in $PROJECTS; do echo building $f; cd $f ;ant -noinput -buildfile build.xml ;mv /root/*.bar ../bars/$f_${{ steps.buildnumber.outputs.build_number }}.bar; cd ../;done
           
-      # Runs a set of commands using the runners shell
-      - name: Check Bars Folder Existance
-        run: |
-          cd bars
-          ls 
-          mkdir /root/bars/dummy
-          cp *.bar /root/bars
-      
+      - name: Authenticate OpenShift And Set Context
+        uses: redhat-actions/oc-login@v1
+        env:
+          OPENSHIFT_USER: ${{ secrets.OPENSHIFT_USER }}
+          OPENSHIFT_PASSWORD: ${{ secrets.OPENSHIFT_PASSWORD }}
+          OPENSHIFT_TOKEN: ${{ secrets.OPENSHIFT_TOKEN }}
+          OPENSHIFT_NAMESPACE: ${{ secrets.OPENSHIFT_NAMESPACE }}
+          OPENSHIFT_SERVER_RUL: ${{ secrets.OPENSHIFT_SERVER_RUL }}
+        with:
+          openshift_server_url:  ${{ secrets.OPENSHIFT_SERVER_RUL }}
+          #openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          openshift_username: ${{ env.OPENSHIFT_USER }}
+          openshift_password: ${{ env.OPENSHIFT_PASSWORD }}
+          insecure_skip_tls_verify: true
+          #certificate_authority_data: ${{ secrets.CA_DATA }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+          
+      - name: Check API Resources
+        run: oc api-resources
+           
+      - name: Build All Projects One By One
+        run: for f in $PROJECTS; do echo building $f; cd $f ;ant -noinput -buildfile build.xml ; cd ../;done
+             mv /root/*.bar ../root/bars
+     
       - name: Docker Build Image for repo ${{ github.repository }} of build number ${{ steps.buildnumber.outputs.build_number }}
         run: |
           docker build -t cat_a_011:v_${{ steps.buildnumber.outputs.build_number }} -f /root/dockerfile .
