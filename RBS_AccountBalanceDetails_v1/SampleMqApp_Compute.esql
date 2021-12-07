@@ -1,0 +1,12 @@
+
+
+CREATE COMPUTE MODULE SampleMqApp_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		 CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot.JSON.Data.AppName = 'RBS_AccountBalanceDetails_v1';
+	END;
+END MODULE;
